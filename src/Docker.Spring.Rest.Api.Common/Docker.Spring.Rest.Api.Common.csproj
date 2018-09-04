@@ -1,0 +1,16 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netcoreapp2.1</TargetFramework>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Rest.Client" Version="1.0.0" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="ProductClient\" />
+    <Folder Include="ProductClient\Model\" />
+    <Folder Include="SearchClient\" />
+    <Folder Include="SearchClient\Model\" />
+  </ItemGroup>
+</Project>
