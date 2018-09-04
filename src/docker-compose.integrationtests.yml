@@ -6,4 +6,4 @@ services:
       - .:/src
     command:
       - /bin/bash
-      - /src/run-tests.sh
+      - /src/start-tests.sh
