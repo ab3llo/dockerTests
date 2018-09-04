@@ -7,22 +7,17 @@ using Docker.Spring.Rest.Api.Common;
 using Rest.Client;
 using Xunit;
 
-namespace Docker.Spring.Rest.Api.Tests
+namespace Docker.Api.Tests
 {
     public class ProductApiTests
     {
-        RestClient _client;
-
-        public ProductApiTests()
-        {
-            _client = new RestClient(TestEnvironment.BaseUrl);
-        }
+        string basePath = "http://192.168.1.99:8080";
 
         [Theory]
-        [InlineData("1","World-Check Online", "It's an application of some sort that does something sometimes")]
-        [InlineData("2", "Connected Risk", "It's an application of some sort that does something sometimes maybe")]
-        [InlineData("3", "ONE Source", "We don't really know what this does")]
-        public async Task CreateProduct(string id,string title, string description)
+        [InlineData("World-Check Online", "It's an application of some sort that does something sometimes")]
+        [InlineData("Connected Risk", "It's an application of some sort that does something sometimes maybe")]
+        [InlineData("ONE Source", "We don't really know what this does")]
+        public async Task CreateProduct(string title, string description)
         {
             Product product = new Product
             {
@@ -30,24 +25,26 @@ namespace Docker.Spring.Rest.Api.Tests
                 Description = description
             };
 
-            ProductApi api = new ProductApi("");
+            ProductApi api = new ProductApi(basePath);
             ApiResponse<Product> response = await api.PostAsync(product);
+            product.Id = response.Data.Id;
             Product data = response.Data;
 
-            Assert.True(response.IsSuccessStatusCode);
+            Assert.Equal(HttpStatusCode.OK, response.Status);
             Assert.NotNull(data);
-            
-            Assert.Equal("","");
-            Assert.Equal("", "");
-            Assert.Equal("", "");
 
-            await api.DeleteAsync(id, new Product { Id = id });
+            Assert.NotNull(response.Data.Id);
+            Assert.Equal(product.Title, response.Data.Title);
+            Assert.Equal(product.Description, response.Data.Description);
+
+            List<Product> products = new List<Product> { product };
+            await DeleteProducts(products);
         }
 
         [Fact]
         public async Task GetProducts()
         {
-            ProductApi api = new ProductApi("");
+            ProductApi api = new ProductApi(basePath);
 
             List<Product> products = new List<Product>()
             {
@@ -58,25 +55,23 @@ namespace Docker.Spring.Rest.Api.Tests
 
             foreach (Product product in products)
             {
-                await api.PostAsync(product);
+                var createResponse = await api.PostAsync(product);
+                product.Id = createResponse.Data.Id;
             }
 
-            ApiResponse <List<Product>>response = await api.GetAllAsync();
+            ApiResponse<List<Product>> response = await api.GetAllAsync();
 
-            Assert.True(response.IsSuccessStatusCode);
+            Assert.Equal(HttpStatusCode.OK, response.Status);
             Assert.NotEmpty(response.Data);
             Assert.Equal(products.Count, response.Data.Count);
 
-            products.ForEach(async p => await api.DeleteAsync(p.Id, p));
+            await DeleteProducts(products);
         }
 
-        [Theory]
-        [InlineData("1")]
-        [InlineData("2")]
-        [InlineData("3")]
-        public async Task GetProduct(string id)
+        [Fact]
+        public async Task GetProduct()
         {
-            ProductApi api = new ProductApi("");
+            ProductApi api = new ProductApi(basePath);
 
             List<Product> products = new List<Product>()
             {
@@ -87,31 +82,35 @@ namespace Docker.Spring.Rest.Api.Tests
 
             foreach (Product product in products)
             {
-                await api.PostAsync(product);
+                var createResponse = await api.PostAsync(product);
+                product.Id = createResponse.Data.Id;
             }
 
-            ApiResponse<Product> response = await api.GetAsync(id);
-            Assert.True(response.IsSuccessStatusCode);
+            ApiResponse<Product> response = await api.GetAsync(products[2].Id);
+            Assert.Equal(HttpStatusCode.OK, response.Status);
             Assert.NotNull(response.Data);
 
-            Product expected = products[Int32.Parse(id) - 1];
+            Product expected = products[2];
 
-            Assert.Equal(expected.Id,response.Data.Id);
+            Assert.Equal(expected.Id, response.Data.Id);
             Assert.Equal(expected.Title, response.Data.Title);
             Assert.Equal(expected.Description, response.Data.Description);
+
+            await DeleteProducts(products);
         }
 
         [Fact]
         public async Task UpdateProduct()
         {
             Product product = new Product
-            { 
-                Title = "ONE Source", 
-                Description = "It's an application of some sort that does something sometimes" 
+            {
+                Title = "ONE Source",
+                Description = "It's an application of some sort that does something sometimes"
             };
 
-            ProductApi api = new ProductApi("");
+            ProductApi api = new ProductApi(basePath);
             ApiResponse<Product> response = await api.PostAsync(product);
+            product.Id = response.Data.Id;
 
             Product update = new Product
             {
@@ -119,15 +118,16 @@ namespace Docker.Spring.Rest.Api.Tests
                 Description = @"Highly visual and intuitive to use, Eikon is the ultimate set of financial analysis tools. Integrate multiple workflows, 
                 co-create applications and securely connect to other financial professionals.",
             };
-            response = await api.PutAsync("1", update);
+            response = await api.PutAsync(product.Id, update);
 
-            Assert.True(response.IsSuccessStatusCode);
+            Assert.Equal(HttpStatusCode.OK, response.Status);
             Assert.NotNull(response.Data);
 
             Assert.Equal(update.Description, response.Data.Description);
             Assert.Equal(update.Title, response.Data.Title);
 
-            await api.DeleteAsync("1", new Product { Id = "1" });
+            List<Product> products = new List<Product> { product };
+            await DeleteProducts(products);
         }
 
         [Fact]
@@ -139,18 +139,26 @@ namespace Docker.Spring.Rest.Api.Tests
                 Description = "It's an application of some sort that does something sometimes"
             };
 
-            ProductApi api = new ProductApi("");
+            ProductApi api = new ProductApi(basePath);
             ApiResponse<Product> response = await api.PostAsync(product);
 
-            Product deletedProduct = new Product
-            {
-               Id= "1"
-            };
-            response = await api.DeleteAsync(deletedProduct.Id, deletedProduct);
+            ApiResponse<object> deleteResponse = await api.DeleteAsync(response.Data.Id);
             Assert.True(response.IsSuccessStatusCode);
 
-            response = await api.GetAsync(deletedProduct.Id);
-            Assert.Equal(HttpStatusCode.NotFound, response.Status);
+            response = await api.GetAsync(response.Data.Id);
+            Assert.Equal(HttpStatusCode.OK, response.Status);
+            Assert.Null(response.Data);
+        }
+
+
+        private async Task DeleteProducts(List<Product> products)
+        {
+            ProductApi api = new ProductApi(basePath);
+
+            foreach (Product product in products)
+            {
+                var deleted = await api.DeleteAsync(product.Id);
+            }
         }
     }
 }

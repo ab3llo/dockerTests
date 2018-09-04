@@ -1,9 +1,4 @@
 version: '3'
 services:
   apitests:
-    image: microsoft/dotnet:2.1-sdk
-    volumes:
-      - .:/src
-    command:
-      - /bin/bash
-      - /src/start-tests.sh
+    build: .

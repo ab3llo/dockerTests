@@ -1,0 +1,6 @@
+FROM microsoft/dotnet:2.1-sdk
+
+WORKDIR /app/src
+COPY . .
+
+ENTRYPOINT [ "dotnet", "test", "--logger:trx" ]
