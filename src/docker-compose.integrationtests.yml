@@ -1,6 +1,6 @@
 version: '3'
 services:
-  unittests:
+  apitests:
     image: microsoft/dotnet:2.1-sdk
     volumes:
       - .:/src

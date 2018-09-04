@@ -5,6 +5,11 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Docker.Spring.Rest.Api.Test
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Docker.Spring.Rest.Api.Common", "Docker.Spring.Rest.Api.Common\Docker.Spring.Rest.Api.Common.csproj", "{1F84FA3B-0FDE-4BE2-99B1-65AFBFDA09D0}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{BDAB9527-307F-4467-9FD2-F61FCDA0F4DA}"
+	ProjectSection(SolutionItems) = preProject
+		nuget.config = nuget.config
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU

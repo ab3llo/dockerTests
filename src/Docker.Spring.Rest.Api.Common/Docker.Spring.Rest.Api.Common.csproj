@@ -5,12 +5,12 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Rest.Client" Version="1.0.0" />
-  </ItemGroup>
-  <ItemGroup>
     <Folder Include="ProductClient\" />
     <Folder Include="ProductClient\Model\" />
     <Folder Include="SearchClient\" />
     <Folder Include="SearchClient\Model\" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="Rest.Client" Version="1.0.0" />
   </ItemGroup>
 </Project>
